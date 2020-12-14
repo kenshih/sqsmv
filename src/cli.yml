@@ -1,0 +1,27 @@
+name: sqsmv
+version: "0.1.0"
+author: Ken Shih <ken.shih@gmail.com>
+about: Moves messages from one sqs queue into another queue e.g. replay dlq to non-dlq
+args:
+    - FROM_SQS_QUEUE:
+        help: Sets the url of the SQS source to READ messages from
+        short: f
+        long: from-q
+        required: true
+        takes_value: true
+    - TO_SQS_QUEUE:
+        help: Sets the url of the SQS to WRITE messages to
+        short: t
+        long: to-q
+        required: true
+        takes_value: true
+    - verbose:
+        short: v
+        long: verbose
+        help: Sets the level of verbosity
+        takes_value: false
+    - delete-source:
+        short: D
+        long: delete-source
+        help: After successful WRITE to TO_SQS_QUEUE, deletes original message from FROM_SQS_QUEUE
+        takes_value: false
