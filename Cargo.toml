@@ -4,6 +4,7 @@ version = "0.1.1"
 authors = ["Ken Shih <ken.shih@gmail.com>"]
 description = "Moves messages from one sqs queue into another queue e.g. replay dlq to non-dlq"
 license = "MIT"
+edition = "2018"
 readme = "README.md"
 homepage = "https://github.com/kenshih/sqsmv"
 repository = "https://github.com/kenshih/sqsmv"
