@@ -1,6 +1,6 @@
 # sqsmv
 
-**STATUS: in development**
+**STATUS: alpha**
 
 Moves messages from one sqs queue into another queue e.g. replay dlq to non-dlq
 
