@@ -12,6 +12,7 @@
   - [Or install with Cargo](#or-install-with-cargo)
 - [Usage](#usage)
 - [Errors](#errors)
+  - [Known Issues](#known-issues)
 - [Development](#development)
 
 # Description
@@ -61,6 +62,10 @@ This program is very conservative with errors right now.
 1. If any READs on the SQS fail, the program will exit, reporting the READ failure
 2. If any WRITEs fail, the program will exit, reporting WRITE failures
 3. If any DELETEs fail, the program will exit, reporting DELETE failures that user can then use to do any cleanup necessary
+
+## Known Issues
+
+AWS profiles configured with `role_arn`/`source_profile` can not be resolved at this time. Only profiles configured simply with valid `aws_access_key_id`/`aws_secret_access_key` are supported at this time.
 
 # Development
 
