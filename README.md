@@ -9,6 +9,7 @@
 - [Description](#description)
 - [Installation Options](#installation-options)
   - [Download the binary](#download-the-binary)
+  - [Or install with Cargo](#or-install-with-cargo)
 - [Usage](#usage)
 - [Errors](#errors)
 - [Development](#development)
@@ -29,6 +30,13 @@ It does so by:
 3. you may need to `chmod +x sqsmv` to give execute prives
 4. run it!
 5. (Optionally) add it to your PATH somewhere
+
+## Or install with Cargo
+On Linux (prerequisite):`apt-get install libssl-dev`
+
+On Mac & Linux:
+1. if you don't have cargo: [install it](https://doc.rust-lang.org/cargo/getting-started/installation.html)
+2. `cargo install sqsmv`
 # Usage
 
 Assuming you have [AWS Named Profiles](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html) set up and both queues are under the same subaccount, this is how to run `sqsmv` from the command line ( also see `sqsmv --help`).
