@@ -89,14 +89,14 @@ impl QueueMessageMover {
           Ok(_) => {
             // delete them
             match self.clear_messages(vec).await {
-              Ok(x) => Ok(x.successful.len() as u8),//println!("cleanup succeeded {:?}", x),
-              Err(e) => Err(format!("Could not delete message after post. Exiting. Messages from source not-deleted, yet posted to sink: {:?}", e)),
+              Ok(x) => return Ok(x.successful.len() as u8),//println!("cleanup succeeded {:?}", x),
+              Err(e) => return Err(format!("DELETE errors: Could not delete message after post. Exiting. Messages from source not-deleted, yet posted to sink: {:?}", e)),
             }
           }
-          Err(e) => Err(format!("swallowing error after write {}", e)),
+          Err(e) => return Err(format!("WRITE errors {}", e)),
         }
       }
-      None => Ok(0),
+      None => return Ok(0),
     }
   }
 
@@ -114,10 +114,13 @@ impl QueueMessageMover {
     let processed_count = match self.client.receive_message(receive_request).await {
       Ok(result) => match self.handle_messages(result).await {
         Ok(count) => count,
-        _ => 0,
+        Err(e) => {
+          println!("{}", e);
+          0
+        }
       },
       Err(err) => {
-        println!("{:?}", err);
+        println!("READ failures: {:?}", err);
         0
       }
     };
