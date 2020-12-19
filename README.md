@@ -1,6 +1,7 @@
 # sqsmv
 
 **STATUS: alpha**
+![CI](https://github.com/kenshih/sqsmv/workflows/CI/badge.svg)
 
 Moves messages from one sqs queue into another queue e.g. replay dlq to non-dlq
 
