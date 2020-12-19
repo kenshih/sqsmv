@@ -7,6 +7,23 @@ use rusoto_sqs::{
 };
 use uuid::Uuid;
 
+fn build_put_message_from_orig(msg: &Message) -> SendMessageBatchRequestEntry {
+  let uuid = Uuid::new_v4();
+  //msg.attributes;
+  SendMessageBatchRequestEntry {
+    id: uuid.to_string(),
+    delay_seconds: Some(0),
+    message_attributes: None, //Some(msg.attributes),
+    message_body: match msg.body.clone() {
+      Some(b) => b,
+      None => "".to_string(),
+    },
+    message_deduplication_id: None,
+    message_group_id: None,
+    message_system_attributes: None,
+  }
+}
+
 //#[derive(Debug)]
 pub struct QueueMessageMover {
   from_queue_url: String,
@@ -55,52 +72,38 @@ impl QueueMessageMover {
     self.client.send_message_batch(batch).await
   }
 
-  fn build_put_message_from_orig(&self, msg: &Message) -> SendMessageBatchRequestEntry {
-    let uuid = Uuid::new_v4();
-    //msg.attributes;
-    SendMessageBatchRequestEntry {
-      id: uuid.to_string(),
-      delay_seconds: Some(0),
-      message_attributes: None, //Some(msg.attributes),
-      message_body: match msg.body.clone() {
-        Some(b) => b,
-        None => "".to_string(),
-      },
-      message_deduplication_id: None,
-      message_group_id: None,
-      message_system_attributes: None,
-    }
-  }
-
-  //multi
-  async fn handle_messages(&self, receive_message_result: ReceiveMessageResult) {
+  async fn handle_messages(
+    &self,
+    receive_message_result: ReceiveMessageResult,
+  ) -> Result<u8, String> {
     match receive_message_result.messages {
       Some(vec) => {
+        // prep messages
         let send_messages = vec
           .iter()
           .clone()
-          .map(|x| self.build_put_message_from_orig(x))
+          .map(|x| build_put_message_from_orig(x))
           .collect::<Vec<SendMessageBatchRequestEntry>>();
-
+        // write them
         match self.write_messages(send_messages).await {
-          Ok(_) => { 
+          Ok(_) => {
+            // delete them
             match self.clear_messages(vec).await {
-              Ok(x) => println!("cleanup succeeded {:?}", x),
-              Err(e) => panic!("Could not delete message after post. Exiting. Messages from source not-deleted, yet posted to sink: {:?}", e),
+              Ok(x) => Ok(x.successful.len() as u8),//println!("cleanup succeeded {:?}", x),
+              Err(e) => Err(format!("Could not delete message after post. Exiting. Messages from source not-deleted, yet posted to sink: {:?}", e)),
             }
-          ()},
-          Err(e) => println!("swallowing error after write {}", e),
-        };
+          }
+          Err(e) => Err(format!("swallowing error after write {}", e)),
+        }
       }
-      None => println!("0 messages in result"),
+      None => Ok(0),
     }
   }
-  pub async fn run(&self) {
-    //let client = SqsClient::new(Region::UsEast1);
 
+  pub async fn receive_batch(&self) -> u8 {
     let receive_request = ReceiveMessageRequest {
       attribute_names: None,
-      max_number_of_messages: Some(1),
+      max_number_of_messages: Some(10),
       message_attribute_names: None,
       queue_url: String::from(&self.from_queue_url),
       receive_request_attempt_id: None,
@@ -108,9 +111,31 @@ impl QueueMessageMover {
       wait_time_seconds: Some(1),
     };
 
-    match self.client.receive_message(receive_request).await {
-      Ok(result) => self.handle_messages(result).await,
-      Err(err) => println!("{:?}", err),
+    let processed_count = match self.client.receive_message(receive_request).await {
+      Ok(result) => match self.handle_messages(result).await {
+        Ok(count) => count,
+        _ => 0,
+      },
+      Err(err) => {
+        println!("{:?}", err);
+        0
+      }
     };
+    processed_count
+  }
+
+  pub async fn run(&self) -> u32 {
+    let mut count = 100;
+    let mut total_count: u32 = 0;
+    const MAX_LOOP_COUNT: u32 = 1000000;
+    let mut loop_count = 0;
+    while count > 0 && loop_count < MAX_LOOP_COUNT {
+      count = self.receive_batch().await;
+      println!("processed: {}", count);
+      loop_count += 1;
+      total_count += count as u32;
+    }
+    println!("total processed: {}", total_count);
+    total_count
   }
 }
