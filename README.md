@@ -17,7 +17,7 @@
 
 # Description
 
-Moves messages from one sqs queue into another queue e.g. replay dlq to non-dlq
+Command-line tool that moves messages from one SQS queue into another queue e.g. replay dlq to non-dlq
 
 It does so by:
 1. reading the "from" sqs queue in a batch of 1-10 messages

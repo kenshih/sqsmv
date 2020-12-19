@@ -2,7 +2,7 @@
 name = "sqsmv"
 version = "0.1.1"
 authors = ["Ken Shih <ken.shih@gmail.com>"]
-description = "Moves messages from one sqs queue into another queue e.g. replay dlq to non-dlq"
+description = "Command-line tool that moves messages from one SQS queue into another queue e.g. replay dlq to non-dlq"
 license = "MIT"
 edition = "2018"
 readme = "README.md"
