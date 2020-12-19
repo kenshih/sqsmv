@@ -9,10 +9,8 @@ async fn main() {
     // .unwrap() ok because FROM_SQS_QUEUE and TO_SQS_QUEUE are required (see cli.yml)
     let from_sqs = matches.value_of("FROM_SQS_QUEUE").unwrap();
     let to_sqs = matches.value_of("TO_SQS_QUEUE").unwrap();
-    let qs = sqsmv::Qs {
-        from_queue_url: from_sqs.to_string(),
-        to_queue_url: to_sqs.to_string()
-    };
+    let message_mover = sqsmv::QueueMessageMover::new(from_sqs.to_string(),
+        to_sqs.to_string());
     println!("Using\nFROM_SQS_QUEUE: {}", from_sqs);
     println!(" TO_SQS_QUEUE: {}", to_sqs);
 
@@ -24,5 +22,5 @@ async fn main() {
         println!("[delete-source enabled]: will delete message on successful mv");
     }
 
-    sqsmv::run(qs).await;
+    message_mover.run().await;
 }
